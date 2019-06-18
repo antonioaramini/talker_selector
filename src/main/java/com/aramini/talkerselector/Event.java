@@ -11,9 +11,7 @@ public class Event
 {
 	private String name;
 	private GregorianCalendar date;
-	
-	// Pending invitations
-	private ArrayList<String> invitedPeople;
+
 	// People who have accepted
 	private ArrayList<String> participants;
 	// People who have declined the invitation or have been removed from the Event
@@ -26,10 +24,10 @@ public class Event
 		this.setDate(date);
 	}
 	
-	public Event(String name, GregorianCalendar date, ArrayList<String> invitedPeople)
+	public Event(String name, GregorianCalendar date, ArrayList<String> participants)
 	{
 		this(name,date);
-		this.setInvitedPeople(invitedPeople);
+		this.setParticipants(participants);
 	}
 
 	public String getName() 
@@ -46,22 +44,12 @@ public class Event
 	{
 		return date;
 	}
-
+	
 	public void setDate(GregorianCalendar date) 
 	{
 		this.date = date;
 	}
 
-	public ArrayList<String> getInvitedPeople() 
-	{
-		return invitedPeople;
-	}
-
-	public void setInvitedPeople(ArrayList<String> invitedPeople) 
-	{
-		this.invitedPeople = invitedPeople;
-	}
-	
 	public ArrayList<String> getParticipants() 
 	{
 		return participants;
@@ -82,31 +70,6 @@ public class Event
 		this.removedPeople = removedPeople;
 	}
 	
-	public boolean addInvitedPerson(String name)
-	{
-		if (invitedPeople == null)
-			invitedPeople = new ArrayList<String>();
-		if (!invitedPeople.contains(name))
-			return invitedPeople.add(name);
-		else
-			return false;
-	}
-	
-	/*
-	 * Called in case a person declined the invitation or we manually remove him/her.
-	 */
-	public boolean removeInvitedPerson(String name)
-	{
-		if (invitedPeople == null || !invitedPeople.contains(name))
-			return false;
-		
-		invitedPeople.remove(name);
-		if (removedPeople == null)
-			removedPeople = new HashMap<String, GregorianCalendar>();
-		removedPeople.put(name, new GregorianCalendar());
-		return true;
-	}
-	
 	/*
 	 * Called when an invitation is accepted by someone OR to manually add a participant "on the fly".
 	 */
@@ -115,12 +78,13 @@ public class Event
 		if (participants == null)
 			participants = new ArrayList<String>();
 		
-		if (!participants.contains(name))
+		if (removedPeople != null && removedPeople.containsKey(name))
 		{
-			if (invitedPeople != null && invitedPeople.contains(name))
-				invitedPeople.remove(name);
+			removedPeople.remove(name);
 			return participants.add(name);
 		}
+		else if (!participants.contains(name))
+			return participants.add(name);
 		else
 			return false;
 	}
@@ -146,10 +110,6 @@ public class Event
 	 */
 	public String getRandomTalker() throws NoParticipantsException
 	{
-		if (invitedPeople != null && invitedPeople.size() > 0)
-			for(int i=invitedPeople.size()-1;i>=0;i--)
-				removeInvitedPerson(invitedPeople.get(i));
-		
 		if (participants == null || participants.size() == 0)
 			throw new NoParticipantsException("No participants are registered for the event!");
 		
